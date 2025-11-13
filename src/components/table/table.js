@@ -1,7 +1,7 @@
 import { El } from "../../utils/el";
-import { loadTasks, removeTask } from "../../modules/storage";
 import { getStatusColor, getPriorityColor } from "../../utils/colorUtils";
 import { viewTaskModal } from "../modal/viewTaskModal";
+import { removeTask } from "../../api/removeTask";
 
 export function Table() {
   const table = El({
@@ -42,7 +42,7 @@ export function Table() {
       children: [
         El({
           element: "td",
-          innerText: task.taskName,
+          innerText: task.name || task.taskName,
           className:
             "p-2 border border-r-gray-300 border-l-gray-300 border-t-gray-300 border-b-gray-300",
         }),
@@ -82,8 +82,9 @@ export function Table() {
             El({
               element: "div",
               innerText: task.deadline,
-              className:
-                "border rounded-full border-blue-400 text-center inline-block p-1 md:px-2",
+              className: `${
+                task.deadline ? "border border-blue-400 rounded-full" : "-"
+              } text-center inline-block p-1 md:px-2`,
             }),
           ],
         }),
@@ -100,29 +101,46 @@ export function Table() {
                   element: "i",
                   className:
                     "fa-solid fa-trash bg-[#dc3545] text-white text-sm p-1 sm:py-2 sm:px-3 rounded-md",
-                  onclick: () => {
-                    removeTask(task.id);
-                    row.remove();
-                  },
+                  eventListener: [
+                    {
+                      event: "click",
+                      callback: async () => {
+                        await removeTask(task.id);
+                        row.remove();
+                      },
+                    },
+                  ],
                 }),
               ],
             }),
-            // edit task
+            // edit task: open modal and populate fields (main.js handles update)
             El({
               element: "button",
               className: "cursor-pointer",
-              onclick: () => {
-                const modal = document.getElementById("taskModal");
-                modal.classList.remove("hidden");
-                document.getElementById("addTask").innerText = "Update Task";
-                document.getElementById("taskName").value = task.taskName;
-                document.getElementById("priority").value = task.priority;
-                document.getElementById("status").value = task.status;
-                document.getElementById("deadline").value = task.deadline;
-                document.getElementById("details").value = task.details || "";
-
-                modal.dataset.editId = task.id;
-              },
+              eventListener: [
+                {
+                  event: "click",
+                  callback: () => {
+                    const modal = document.getElementById("taskModal");
+                    if (!modal) return;
+                    modal.dataset.editId = task.id;
+                    const nameInput = modal.querySelector("#taskName");
+                    if (nameInput)
+                      nameInput.value = task.name || task.taskName || "";
+                    const priority = modal.querySelector("#priority");
+                    if (priority) priority.value = task.priority || "low";
+                    const status = modal.querySelector("#status");
+                    if (status) status.value = task.status || "todo";
+                    const deadline = modal.querySelector("#deadline");
+                    if (deadline) deadline.value = task.deadline || "";
+                    const details = modal.querySelector("#details");
+                    if (details) details.value = task.details || "";
+                    const addBtn = modal.querySelector("#addTask");
+                    if (addBtn) addBtn.innerText = "Update Task";
+                    modal.classList.remove("hidden");
+                  },
+                },
+              ],
               children: [
                 El({
                   element: "i",
@@ -154,9 +172,6 @@ export function Table() {
 
     table.querySelector("#taskTableBody").appendChild(row);
   };
-
-  const savedTasks = loadTasks();
-  savedTasks.forEach((task) => table.addRow(task));
 
   return table;
 }

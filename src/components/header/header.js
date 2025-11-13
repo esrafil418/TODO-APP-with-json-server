@@ -8,7 +8,7 @@ export function Header() {
     children: [
       El({
         element: "div",
-        className: "flex gap-2 flex",
+        className: "flex gap-2 flex justify-center items-center",
         children: [
           El({
             element: "img",
@@ -18,11 +18,11 @@ export function Header() {
           El({
             element: "div",
             className:
-              " text-lg xl:text-xl lg:mx-1 flex justify-center items-center",
+              "h-[100%] text-lg xl:text-xl",
             children: [
               El({
                 element: "p",
-                className: "text-white",
+                className: "text-white pt-1",
                 innerText: "My To-Do Tasks",
               }),
             ],

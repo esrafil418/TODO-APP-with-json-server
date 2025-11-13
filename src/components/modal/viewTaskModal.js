@@ -31,7 +31,9 @@ export function viewTaskModal(task) {
             children: [
               El({
                 element: "p",
-                innerHTML: `<strong>Task name:</strong> ${task.taskName}`,
+                innerHTML: `<strong>Task name:</strong> ${
+                  task.name || task.taskName
+                }`,
               }),
               El({
                 element: "p",
